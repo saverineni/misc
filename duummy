@@ -1,0 +1,1 @@
+DATAVAULT_HASH_CALCULATOR_PROFILE=--database.name=${database_name} --spring.profiles.active=${execution_env}
