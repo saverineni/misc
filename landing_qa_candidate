@@ -1,0 +1,145 @@
+#!groovy
+@Library(['cdsdar-jenkins-shared@master', 'cdsdar-jenkins-infrastructure-shared@master']) _
+
+def dockerEnvironmentName = 'qa'
+def customs_pipeline_landing_module_name = 'customs-pipeline-landing'
+def gitCustomsPipelineLandingURL = 'ssh://git@10.102.81.191:7999/cdsd/customs-pipeline-landing.git'
+def customs_pipeline_artifact_versions_json = ''
+def customs_pipeline_landing_release_branch = ''
+
+def customs_pipeline_landing_version = ''
+def customs_pipeline_landing_artifactId = ''
+def customs_pipeline_landing_groupId = ''
+
+pipeline {
+    agent any
+    tools {
+        maven 'maven-3'
+    }
+    options {
+        //Only keep 100 most recent builds
+        buildDiscarder(logRotator(numToKeepStr: '100'))
+        disableConcurrentBuilds()
+        ansiColor(colorMapName: 'XTerm')
+    }
+    environment {
+        generic_data_model_location = 'generic_data_model_blueprint'
+        customs_pipeline_location = 'customs_pipeline'
+        customs_pipeline_landing_location = 'customs_pipeline_landing'
+        customs_pipeline_generic_data_model_location = 'customs_pipeline_generic_data_model_'
+        customs_pipeline_exploitation_report_location = 'customs_pipeline_exploitation_report'
+        dev_tools_location = 'dev_tools'
+        smoke_test_location = 'smoke_tests'
+        workspaceDir = "${dev_tools_location}"
+    }
+    stages {
+        stage('Initialize') {
+            steps {
+                deleteDir()
+            }
+        }
+        stage('Create Customs Pipeline Landing release candidate') {
+            steps {
+                dir(env.customs_pipeline_landing_location) {
+                    gitCheckoutRecursive(gitCustomsPipelineLandingURL)
+                    refreshGitSubmodules()
+
+                    sh "mvn clean compile"
+
+                    script {
+                        customs_pipeline_landing_version = readProjectVersionFromPom()
+                        customs_pipeline_landing_release_branch = releaseBranchName(customs_pipeline_landing_version)
+
+                        customsPipelineLandingCreateSubModuleBranch(customs_pipeline_landing_release_branch)
+
+                        createReleaseCandidate(customs_pipeline_landing_version)
+                        updateDevelopVersion(customs_pipeline_landing_version)
+
+                        customsPipelineLandingSubModuleUpdateBranch(customs_pipeline_landing_release_branch)
+                    }
+                }
+            }
+        }
+        stage('Build Customs Pipeline Landing release candidate') {
+            steps {
+                dir(env.customs_pipeline_landing_location) {
+                    gitCheckoutRecursive(gitCustomsPipelineLandingURL, customs_pipeline_landing_release_branch )
+                    refreshGitSubmodules(customs_pipeline_landing_release_branch)
+
+                    sh "mvn clean deploy"
+
+                    script {
+                        def pom = readPom()
+                        customs_pipeline_landing_version = pom.version
+                        customs_pipeline_landing_artifactId = pom.artifactId
+                        customs_pipeline_landing_groupId = pom.groupId
+                    }
+                }
+
+                script {
+                    customs_pipeline_artifact_versions_json = groovy.json.JsonOutput.toJson([
+                            [customs_pipeline_landing_version   : "${customs_pipeline_landing_version}",
+                             customs_pipeline_landing_artifactId: "${customs_pipeline_landing_artifactId}",
+                             customs_pipeline_landing_groupId   : "${customs_pipeline_landing_groupId}"
+                            ]
+                    ]);
+                    log("${customs_pipeline_artifact_versions_json}")
+                }
+                dir(env.dev_tools_location) {
+                    gitCheckoutRecursive('ssh://git@10.102.81.191:7999/cdsd/dev-tools.git', 'master')
+                }
+            }
+        }
+        stage('Start customs_pipeline docker container in qa') {
+            steps {
+                startCustomsPipelineContainer("${dockerEnvironmentName}", getDockerHost_qa(), true)
+            }
+        }
+        stage('Deploy customs pipeline jobs to customs_pipeline docker container in qa') {
+            steps {
+                deployCustomsPipelineContainer("${dockerEnvironmentName}", getDockerHost_qa(), "${customs_pipeline_artifact_versions_json}")
+            }
+        }
+        stage('RAW to Landing Smoke Test') {
+            steps {
+                script {
+                    sh "mkdir ${env.smoke_test_location}"
+                }
+
+                dir(env.smoke_test_location) {
+                    gitCheckoutRecursive('ssh://git@10.102.81.191:7999/cdsd/pdi-smoke-test.git', 'master')
+
+                    sh "mvn clean compile"
+
+                    script {
+                        if (fileExists('src/test/resources/config.properties')) {
+                            withCredentials([file(credentialsId: 'cds-data-bitbucket-private-key', variable: 'FILE')]) {
+                                buildSecureProperties()
+                                sh "mvn -Dtest=RawToLandingSuiteIT -Dexecution.env=qa -Dtest.db.name=jenkins_qa -Dtest.mss.db.name=jenkins_qa -Drefresh.test.db=true test"
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                customs_pipeline_landing_version = latestArtifactVersionFromGit(customs_pipeline_landing_module_name, gitCustomsPipelineLandingURL, customs_pipeline_landing_release_branch)
+                artifactInfoPostNotification(customs_pipeline_landing_version, customs_pipeline_landing_module_name, dockerEnvironmentName)
+            }
+        }
+        success {
+            sendMattermostJenkinsMessage("success", mattermostJenkinsMessage("Succeeded"))
+        }
+        failure {
+            sendMattermostJenkinsMessage("failure", mattermostJenkinsMessage("Failed"))
+        }
+        aborted {
+            sendMattermostJenkinsMessage("aborted", mattermostJenkinsMessage("Aborted"))
+        }
+    }
+
+}
