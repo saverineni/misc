@@ -1,0 +1,55 @@
+
+QA
+
+1) gitCheckoutRecursive ==> checkout out DVHC develop branch recursively
+2) refreshGitSubmodules ==> updates the git submodules with the latest commit id and pushes to DVHC develop branch
+3) compiles the DVHC "mvn clean compile"
+4) read the projects version = 1.0.20-SNAPSHOT
+5) releaseBranchName(1.0.20-SNAPSHOT) ==> release/1.0.20
+6) createReleaseCandidate(1.0.20-SNAPSHOT)==>
+							1) creates branch release/1.0.20
+							2) updated the pom.xml version to 1.0.20-RC1-SNAPSHOT
+							3) commits and pushes to release/1.0.20 branch
+
+7) updateDevelopVersion(1.0.20-SNAPSHOT)==>
+							1) updates develop's version from 1.0.20-SNAPSHOT to 1.0.21-SNAPSHOT
+							2) commits and pushes to develop branch
+
+8) datavaultHashCalculatorSubModuleUpdateBranch(release/1.0.20) ==>
+							1)determineCustomsPipelineCommonReleaseBranch ==>
+											a) cd to customs_pipeline_landing directory
+											b) gitCheckoutRecursive ==> checkout out CPL develop branch recursively
+											c) read the customs_pipeline_landing_develop_version
+
+
+
+
+											#!/bin/bash
+set -e
+
+ENVIRONMENT="$CDS_DATA_ENVIRONMENT"
+SPARK_JAR_PATH=""
+
+if [ -z "$ENVIRONMENT" ];
+then
+    echo "ENVIRONMENT variable 'CDS_DATA_ENVIRONMENT' not set"
+    exit 1
+else
+    APPLICATION_VERSION=$(grep -m1 '<version>' pom.xml | cut -c11- | rev | cut -d"<" -f2  | rev)
+
+    if [ "$ENVIRONMENT" == "local" ]; then
+      SPARK_JAR_PATH="/home/osboxes/cds-workspace/datavault-hash-calculator/target/datavault-hash-calculator-"${APPLICATION_VERSION}".jar"
+    elif [ "$ENVIRONMENT" == "pre_prod" OR "$ENVIRONMENT" == "prod" ]; then
+      SPARK_JAR_PATH="/opt/hmrc/exploitation/cds_exp/datavault-hash-calculator/datavault-hash-calculator-"${APPLICATION_VERSION}".jar"
+    else
+      SPARK_JAR_PATH="/data/apps/cdsdata/pentaho-scripts/${CDS_DATA_ENVIRONMENT}/datavault-hash-calculator/datavault-hash-calculator-"${APPLICATION_VERSION}".jar"
+    fi
+
+    echo "Environment : $ENVIRONMENT"
+    echo "Application version : $APPLICATION_VERSION"
+    echo "Spark jar file path : $SPARK_JAR_PATH"
+
+    sed -i "s@REPLACEABLE_SPARK_JAR_PATH@${SPARK_JAR_PATH}@g" kettle/MAIN_populate_Landing_Hashes.kjb
+    exit 0
+
+fi
