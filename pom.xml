@@ -99,6 +99,12 @@
             <version>${guava.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.0</version>
+        </dependency>
+
         <!-- apache commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -384,15 +390,22 @@
             </plugin>
         </plugins>
     </build>
+
+
 </project>
 
-JsonArray array = new JsonArray();
-JsonObject object = new JsonObject();
-object.addProperty("index", "test1");
-object.addProperty("alias", "alias1");
-JsonObject add = new JsonObject();
-add.add("add", object);
-array.add(add);
-JsonObject addArray = new JsonObject();
-addArray.add("actions", array);
-System.out.println(addArray.toString());
+ private StringEntity getRequestEntity() {
+        JsonObject object = new JsonObject();
+        object.addProperty("index", elasticSearchIndex);
+        object.addProperty("alias", elasticSearchAlias);
+
+        JsonObject add = new JsonObject();
+        add.add(ADD.name().toLowerCase(), object);
+
+        JsonArray array = new JsonArray();
+        array.add(add);
+
+        JsonObject requestEntity = new JsonObject();
+        requestEntity.add("actions", array);
+        return new StringEntity(requestEntity.toString(), ContentType.APPLICATION_JSON);
+    }
