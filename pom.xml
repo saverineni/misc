@@ -385,3 +385,14 @@
         </plugins>
     </build>
 </project>
+
+JsonArray array = new JsonArray();
+JsonObject object = new JsonObject();
+object.addProperty("index", "test1");
+object.addProperty("alias", "alias1");
+JsonObject add = new JsonObject();
+add.add("add", object);
+array.add(add);
+JsonObject addArray = new JsonObject();
+addArray.add("actions", array);
+System.out.println(addArray.toString());
