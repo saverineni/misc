@@ -1,1 +1,9 @@
-DATAVAULT_HASH_CALCULATOR_PROFILE=--database.name=${database_name} --spring.profiles.active=${execution_env}
+private static BoolQueryBuilder buildOriginCountryQuery(BoolQueryBuilder queryWithSearchTerm, SearchCriteria searchCriteria) {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+        return searchCriteria.getOriginCountryCode().stream().map(countryCode -> shouldArray(queryBuilder, countryCode, queryWithSearchTerm, "lines.originCountryCode")
+        ).reduce((first, second) -> queryWithSearchTerm.must(second)).orElse(queryWithSearchTerm);
+    }
+
+    static BoolQueryBuilder shouldArray(BoolQueryBuilder queryBuilder, String countryCode, BoolQueryBuilder queryWithSearchTerm, String term) {
+        return queryBuilder.should(QueryBuilders.termQuery(term, countryCode));
+    }
