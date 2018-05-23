@@ -1,9 +1,19 @@
-private static BoolQueryBuilder buildOriginCountryQuery(BoolQueryBuilder queryWithSearchTerm, SearchCriteria searchCriteria) {
+ private BoolQueryBuilder buildDispatchCountryQuery(BoolQueryBuilder queryWithOriginCountryFacets, SearchCriteria searchCriteria) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        return searchCriteria.getOriginCountryCode().stream().map(countryCode -> shouldArray(queryBuilder, countryCode, queryWithSearchTerm, "lines.originCountryCode")
-        ).reduce((first, second) -> queryWithSearchTerm.must(second)).orElse(queryWithSearchTerm);
+        return searchCriteria.getDispatchCountryCode().stream().map(countryCode -> shouldArray(queryBuilder, countryCode, DISPATCH_COUNTRY_CODE)
+        ).reduce((first, second) -> queryWithOriginCountryFacets.must(second)).orElse(queryWithOriginCountryFacets);
     }
 
-    static BoolQueryBuilder shouldArray(BoolQueryBuilder queryBuilder, String countryCode, BoolQueryBuilder queryWithSearchTerm, String term) {
-        return queryBuilder.should(QueryBuilders.termQuery(term, countryCode));
-    }
+
+     private BoolQueryBuilder buildDispatchCountryQuery(BoolQueryBuilder queryWithOriginCountryFacets, SearchCriteria searchCriteria) {
+
+        if (!searchCriteria.getDispatchCountryCode().isEmpty()) {
+            BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+            for(String countryCode :   searchCriteria.getDispatchCountryCode()) {
+                queryBuilder = shouldArray(queryBuilder, DISPATCH_COUNTRY_CODE, countryCode);
+                queryWithOriginCountryFacets.must(queryBuilder);
+            }
+            return queryWithOriginCountryFacets;
+        }
+        return queryWithOriginCountryFacets;
+        }
