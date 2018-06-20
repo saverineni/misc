@@ -13,7 +13,7 @@ RUN apk add --no-cache openjdk8 maven py-pip procps
 RUN pip install --trusted-host pypi.python.org docker-compose
 
 RUN mvn --version
-
+RUN apk add chromium chromium-chromedriver --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
 <dependencies>
         <dependency>
