@@ -1,0 +1,207 @@
+settings:
+{
+  "customs-20181029-091321248" : {
+    "settings" : {
+      "index" : {
+        "number_of_shards" : "5",
+        "provided_name" : "customs-20181029-091321248",
+        "creation_date" : "1540804404319",
+        "analysis" : {
+          "analyzer" : {
+            "fourCharPrefix" : {
+              "tokenizer" : "fourCharPrefix"
+            },
+            "caseInsensitive" : {
+              "filter" : "lowercase",
+              "tokenizer" : "keyword"
+            }
+          },
+          "tokenizer" : {
+            "fourCharPrefix" : {
+              "type" : "edge_ngram",
+              "min_gram" : "4",
+              "max_gram" : "4"
+            }
+          }
+        },
+        "number_of_replicas" : "1",
+        "uuid" : "5bSkCv-6Simmug7rUO2t6g",
+        "version" : {
+          "created" : "6030199"
+        }
+      }
+    }
+  }
+}
+//////////
+mappings
+{
+  "customs-20181026-110245520" : {
+    "mappings" : {
+      "declaration" : {
+        "dynamic" : "false",
+        "properties" : {
+          "consignee" : {
+            "properties" : {
+              "eori" : {
+                "type" : "keyword"
+              },
+              "name" : {
+                "type" : "text",
+                "analyzer" : "caseInsensitive"
+              },
+              "postcode" : {
+                "type" : "text",
+                "analyzer" : "caseInsensitive"
+              }
+            }
+          },
+          "consignor" : {
+            "properties" : {
+              "eori" : {
+                "type" : "keyword"
+              },
+              "name" : {
+                "type" : "text",
+                "analyzer" : "caseInsensitive"
+              },
+              "postcode" : {
+                "type" : "text",
+                "analyzer" : "caseInsensitive"
+              }
+            }
+          },
+          "declarant" : {
+            "properties" : {
+              "eori" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "declarationId" : {
+            "type" : "text",
+            "analyzer" : "caseInsensitive"
+          },
+          "declarationSource" : {
+            "type" : "keyword"
+          },
+          "declarationType" : {
+            "type" : "keyword"
+          },
+          "destinationCountry" : {
+            "properties" : {
+              "code" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "dispatchCountry" : {
+            "properties" : {
+              "code" : {
+                "type" : "keyword"
+              }
+            }
+          },
+          "entryDate" : {
+            "type" : "date",
+            "format" : "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"
+          },
+          "entryNumber" : {
+            "type" : "text",
+            "analyzer" : "caseInsensitive"
+          },
+          "epuNumber" : {
+            "type" : "keyword"
+          },
+          "goodsLocation" : {
+            "type" : "keyword"
+          },
+          "importExportIndicator" : {
+            "type" : "keyword"
+          },
+          "lines" : {
+            "properties" : {
+              "clearanceDate" : {
+                "type" : "date",
+                "format" : "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"
+              },
+              "commodityCode" : {
+                "type" : "keyword",
+                "fields" : {
+                  "prefix" : {
+                    "type" : "text",
+                    "analyzer" : "fourCharPrefix",
+                    "search_analyzer" : "keyword"
+                  }
+                }
+              },
+              "cpc" : {
+                "type" : "keyword",
+                "fields" : {
+                  "prefix" : {
+                    "type" : "text",
+                    "analyzer" : "fourCharPrefix",
+                    "search_analyzer" : "keyword"
+                  }
+                }
+              },
+              "itemConsignee" : {
+                "properties" : {
+                  "eori" : {
+                    "type" : "keyword"
+                  },
+                  "name" : {
+                    "type" : "text",
+                    "analyzer" : "caseInsensitive"
+                  },
+                  "postcode" : {
+                    "type" : "text",
+                    "analyzer" : "caseInsensitive"
+                  }
+                }
+              },
+              "itemConsignor" : {
+                "properties" : {
+                  "eori" : {
+                    "type" : "keyword"
+                  },
+                  "name" : {
+                    "type" : "text",
+                    "analyzer" : "caseInsensitive"
+                  },
+                  "postcode" : {
+                    "type" : "text",
+                    "analyzer" : "caseInsensitive"
+                  }
+                }
+              },
+              "itemDeclarant" : {
+                "properties" : {
+                  "eori" : {
+                    "type" : "keyword"
+                  }
+                }
+              },
+              "originCountry" : {
+                "properties" : {
+                  "code" : {
+                    "type" : "keyword",
+                    "fields" : {
+                      "codeText" : {
+                        "type" : "text",
+                        "analyzer" : "caseInsensitive"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "transportModeCode" : {
+            "type" : "keyword"
+          }
+        }
+      }
+    }
+  }
+}
