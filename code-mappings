@@ -1,0 +1,189 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "fourCharPrefix": {
+          "tokenizer": "fourCharPrefix"
+        },
+        "caseInsensitive": {
+          "tokenizer": "keyword",
+          "filter": "lowercase"
+        }
+      },
+      "tokenizer": {
+        "fourCharPrefix": {
+          "type": "edge_ngram",
+          "min_gram": 4,
+          "max_gram": 4
+        }
+      }
+    },
+    "max_result_window": 10
+  },
+  "mappings" : {
+    "declaration" : {
+      "dynamic" : "false",
+      "properties" : {
+        "consignee" : {
+          "properties" : {
+            "eori" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "text",
+              "analyzer" : "caseInsensitive"
+            },
+            "postcode" : {
+              "type" : "text",
+              "analyzer" : "caseInsensitive"
+            }
+          }
+        },
+        "consignor" : {
+          "properties" : {
+            "eori" : {
+              "type" : "keyword"
+            },
+            "name" : {
+              "type" : "text",
+              "analyzer" : "caseInsensitive"
+            },
+            "postcode" : {
+              "type" : "text",
+              "analyzer" : "caseInsensitive"
+            }
+          }
+        },
+        "declarant" : {
+          "properties" : {
+            "eori" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "declarationSource" : {
+          "type" : "keyword"
+        },
+        "importExportIndicator" : {
+          "type" : "keyword"
+        },
+        "declarationId" : {
+          "type" : "text",
+          "analyzer": "caseInsensitive"
+        },
+        "entryNumber" : {
+          "type" : "text",
+          "analyzer": "caseInsensitive"
+        },
+        "epuNumber" : {
+          "type" : "keyword"
+        },
+        "transportModeCode": {
+          "type" : "keyword"
+        },
+        "dispatchCountry" : {
+          "properties" : {
+            "code" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "destinationCountry" : {
+          "properties" : {
+            "code" : {
+              "type" : "keyword"
+            }
+          }
+        },
+        "entryDate": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"
+        },
+        "goodsLocation" : {
+          "type" : "keyword"
+        },
+        "declarationType" : {
+          "type" : "keyword"
+        },
+        "lines" : {
+          "properties" : {
+            "commodityCode" : {
+              "type" : "keyword",
+              "fields": {
+                "prefix": {
+                  "type": "text",
+                  "analyzer": "fourCharPrefix",
+                  "search_analyzer": "keyword"
+                }
+              }
+            },
+            "cpc" : {
+              "type" : "keyword",
+              "fields": {
+                "prefix": {
+                  "type": "text",
+                  "analyzer": "fourCharPrefix",
+                  "search_analyzer": "keyword"
+                }
+              }
+            },
+            "itemConsignee" : {
+              "properties" : {
+                "eori" : {
+                  "type" : "keyword"
+                },
+                "name" : {
+                  "type" : "text",
+                  "analyzer" : "caseInsensitive"
+                },
+                "postcode" : {
+                  "type" : "text",
+                  "analyzer" : "caseInsensitive"
+                }
+              }
+            },
+            "itemConsignor" : {
+              "properties" : {
+                "eori" : {
+                  "type" : "keyword"
+                },
+                "name" : {
+                  "type" : "text",
+                  "analyzer" : "caseInsensitive"
+                },
+                "postcode" : {
+                  "type" : "text",
+                  "analyzer" : "caseInsensitive"
+                }
+              }
+            },
+            "itemDeclarant" : {
+              "properties" : {
+                "eori" : {
+                  "type" : "keyword"
+                }
+              }
+            },
+            "originCountry" : {
+              "properties" : {
+                "code" : {
+                  "type" : "keyword",
+                  "fields": {
+                    "codeText": {
+                      "type": "text",
+                      "analyzer": "caseInsensitive"
+                    }
+                  }
+                }
+              }
+            },
+            "clearanceDate": {
+              "type": "date",
+              "format": "yyyy-MM-dd HH:mm:ss.SSSSSSSSS"
+            }
+          }
+        }
+      }
+    }
+  }
+}
