@@ -30,3 +30,8 @@ ADD test /docker-selenium/test
 WORKDIR /docker-selenium/
 
 #ENTRYPOINT ["tail", "-f", "/dev/null"]
+
+
+JSONCompareResult jsonCompareResult = JSONCompare.compareJSON(expectedSettingsAnalysisContents, actualSettingAnalysisContents, JSONCompareMode.LENIENT);
+        log.info(jsonCompareResult.getMessage());
+        return !jsonCompareResult.failed();
