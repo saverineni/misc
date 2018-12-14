@@ -8,3 +8,14 @@ ENV SAMBA_ADMIN_PASSWORD="Pwd_1234567"
 # Add custom script
 ADD ad-users.sh /usr/local/bin/custom.sh
 RUN chmod +x /usr/local/bin/custom.sh
+#!/bin/bash
+
+samba-tool group add E2E_SEARCH
+
+# add users
+samba-tool user add dev Dev_1234567 --use-username-as-cn --given-name="Search" --surname="Dev User" --department="Operations Unit"
+samba-tool user add not_search Dev_1234567 --use-username-as-cn --given-name="Not Search" --surname="Unauthorised User" --department="Other Unit"
+
+# add users to groups
+samba-tool group addmembers E2E_SEARCH dev
+
