@@ -1,3 +1,10 @@
 
-{"data":"22+23","pid":18850,"project":"","session_id":"9f740f2f","timestamp":1544110587055,"type":"input","username":"osboxes"}
-{"data":"[1] 45\n","pid":18850,"project":"","session_id":"9f740f2f","timestamp":1544110587056,"type":"output","username":"osboxes"}
+ENV LDAP_ALLOW_INSECURE="true"
+ENV SAMBA_DOMAIN="CDSSEARCH"
+ENV SAMBA_REALM="CDSSEARCH.LOCAL"
+ENV ROOT_PASSWORD="Pwd_1234567"
+ENV SAMBA_ADMIN_PASSWORD="Pwd_1234567"
+
+# Add custom script
+ADD ad-users.sh /usr/local/bin/custom.sh
+RUN chmod +x /usr/local/bin/custom.sh
