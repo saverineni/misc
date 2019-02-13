@@ -70,3 +70,15 @@ X38CArNRfwY1P2Wo85xBMFyUqB6cMiBZ8mb2fNZY
 jE/qR4c/MP1Q=
 
 ==========================================
+
+Threat Intelligence Exchange (TIE) server is installed in the workspaces
+
+TIE communicates with the Global Threat Intelligence (GTI) Cloud to receive the latest threat information from McAfee Labs.
+
+Advanced Threat Defense (ATD) will receive unknown files from TIE for analysis. 
+Once determined to be malicious, ATD broadcasts the reputation change via DXL to be stored in the TIE Server and allow other DXL-enabled security products to take action.
+
+Our customer’s entire infrastructure can be protected against a new threat immediately once a single endpoint or network device detects and convicts a new file.
+
+
+EPO is more like a dashboard showing information of all attacks on endpoints in a single pnae view.
