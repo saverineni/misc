@@ -1,114 +1,28 @@
-private byte[] stampImageOnPdf(ClaimRequest claimRequest, byte[] byteArray) throws DocumentException, IOException {
-        final ByteArrayOutputStream output = new ByteArrayOutputStream();
-        final PdfReader reader = new PdfReader(byteArray);
-        final PdfStamper stamper = new PdfStamper(reader, output);
-
-
-        PdfContentByte content = stamper.getOverContent(1);
-
-        Base64.Decoder decoder = Base64.getDecoder();
-        byte[] decodedSignatureBytes = decoder.decode(claimRequest.getSignature().split(",")[1]);
-        decodedSignatureBytes = trimImage(decodedSignatureBytes);
-        Image image = Image.getInstance(decodedSignatureBytes);
-        image.scaleAbsolute(50, 50);
-        image.setAbsolutePosition(130, 90);
-        content.addImage(image);
-        stamper.close();
-        return output.toByteArray();
-    }
-
-package com.leadx.esignature.leadxservice.utils;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-
-public class ImageTrimmer {
-    public static void main(String[] args) throws IOException {
-        File outputfile = new File("signature_crop.jpg");
-        File img = new File(ImageTrimmer.class.getClassLoader().getResource("signature.jpg").getFile());
-        BufferedImage image = ImageIO.read(img);
-        image = trimImage(image);
-        saveImage(image, outputfile);
-    }
-
-    public static byte[] trimImage(byte[] byteArray) throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+private static URL generatePresignedURL(File file) {
+        URL generatePresignedUrl = null;
         try {
-            BufferedImage bufferedImage = trimImage(ImageIO.read(bais));
-            ImageIO.write(bufferedImage, "jpg", baos);
-            baos.flush();
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            baos.close();
+            java.util.Date expiration = new java.util.Date();
+            long expTimeMillis = expiration.getTime();
+            expTimeMillis += 1000 * 60 * 60; //1 hour
+            expiration.setTime(expTimeMillis);
+
+            // Generate the pre-signed URL.
+            System.out.println("Generating pre-signed URL.");
+            GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(BUCKET_NAME, file.getName());
+            generatePresignedUrlRequest = generatePresignedUrlRequest
+                    .withMethod(HttpMethod.GET)
+                    .withExpiration(expiration);
+//            generatePresignedUrlRequest.addRequestParameter("Content-Type", "application/pdf");
+//            generatePresignedUrlRequest.addRequestParameter("Content-Length", String.valueOf(file.length()));
+
+
+            generatePresignedUrl = amazonS3().generatePresignedUrl(generatePresignedUrlRequest);
+            System.out.println("GET");
+            System.out.print(generatePresignedUrl.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        return generatePresignedUrl;
+
     }
-
-
-    private static void saveImage(BufferedImage img, File outputfile) {
-
-        try {
-            ImageIO.write(img, "jpg", outputfile);
-        } catch (IOException e) {
-            System.out.println("Unable to save image. ");
-            System.out.print("Message: ");
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private static boolean isNotRemovablePixel(int pixel) {
-        return !isWhitePixel(pixel) && !(((pixel & 0xff000000) >> 24) == 0);
-    }
-
-    private static boolean isWhitePixel(int pixel) {
-        return ((pixel & 0x00ff0000) >> 16 == 255) &&
-                ((pixel & 0x0000ff00) >> 8 == 255) &&
-                ((pixel & 0x000000ff) == 255);
-    }
-
-    private static BufferedImage trimImage(BufferedImage image) {
-        int leftCut = 0;
-        for (int xLeft = 0; xLeft < image.getWidth(); xLeft++)
-            for (int yLeft = 0; yLeft < image.getHeight(); yLeft++)
-                if (isNotRemovablePixel(image.getRGB(xLeft, yLeft))) {
-                    leftCut = xLeft;
-                    // GoTo endOfLeft
-                    yLeft += image.getHeight();
-                    xLeft += image.getWidth();
-                }
-        int topCut = 0;
-        for (int yTop = 0; yTop < image.getHeight(); yTop++)
-            for (int xTop = leftCut; xTop < image.getWidth(); xTop++)
-                if (isNotRemovablePixel(image.getRGB(xTop, yTop))) {
-                    topCut = yTop;
-                    // GoTo endOfTop
-                    yTop += image.getHeight();
-                    xTop += image.getWidth();
-                }
-        int rightCut = image.getWidth() - 1;
-        for (int xRight = image.getWidth() - 1; xRight >= leftCut; xRight--)
-            for (int yRight = topCut; yRight < image.getHeight(); yRight++)
-                if (isNotRemovablePixel(image.getRGB(xRight, yRight))) {
-                    rightCut = xRight;
-                    // GoTo endOfRight
-                    yRight += image.getHeight();
-                    xRight -= image.getWidth();
-                }
-        int bottomCut = image.getHeight() - 1;
-        for (int yBottom = image.getHeight() - 1; yBottom >= topCut; yBottom--)
-            for (int xBottom = leftCut; xBottom <= rightCut; xBottom++)
-                if (isNotRemovablePixel(image.getRGB(xBottom, yBottom))) {
-                    bottomCut = yBottom;
-                    // GoTo endOfBottom
-                    yBottom -= image.getHeight();
-                    xBottom += image.getWidth();
-                }
-        return image.getSubimage(leftCut, topCut, (rightCut - leftCut + 1), (bottomCut - topCut + 1));
-    }
-}
