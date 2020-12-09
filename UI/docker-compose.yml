@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+  ng:
+    image: artifactory.dataengineering.apps.hmrci:8001/cdsdar/angular-cli:1.7.4_1
+    volumes:
+      - ./:/home/builder
+    network_mode: host
+    entrypoint: "tail -f /dev/null"
+    tty: true
+    stdin_open: true
